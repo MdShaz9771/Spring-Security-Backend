@@ -1,6 +1,9 @@
 package com.shaz.TodoFullStack.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,12 +20,20 @@ public class AuthController
 	private UserService userService;
 	
 	@PostMapping("/login")
-	public String authenticate(@RequestBody LoginRequest loginRequest)
+	public ResponseEntity<String> authenticate(@RequestBody LoginRequest loginRequest)
 	{
-		System.out.println(loginRequest.getUsername());
-		System.out.println(loginRequest.getPassword());
-		
-		return userService.verify(loginRequest);
+		try
+		{
+			String token = userService.verify(loginRequest);
+			return ResponseEntity.ok(token);
+		} catch (BadCredentialsException e)
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bad Credentials");
+		} catch (Exception e) {
+			return ResponseEntity.
+					status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("Internal Server Error. Please try again after some time");
+		}
 		
 	}
 

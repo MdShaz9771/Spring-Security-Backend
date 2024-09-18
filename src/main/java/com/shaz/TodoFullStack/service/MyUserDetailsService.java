@@ -26,7 +26,7 @@ public class MyUserDetailsService implements UserDetailsService
             System.out.println("User Not Found");
             throw new UsernameNotFoundException("user not found");
             
-        }else if (user.getAuthProvider() !="local") {
+        }else if (!"local".equals(user.getAuthProvider())) {
         	throw new BadCredentialsException("Use different login method");
 			
 		}

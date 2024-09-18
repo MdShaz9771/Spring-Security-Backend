@@ -2,6 +2,7 @@ package com.shaz.TodoFullStack.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,10 @@ public class UserService
 				loginRequest.getPassword()));
 		if(authentication.isAuthenticated()) {
 			return jwtService.generateToken(loginRequest.getUsername());
+		}else
+		{
+			throw new BadCredentialsException("Bad crendentials. Please check the credentials");
 		}
-		return null;
 	}
 
 }
