@@ -39,11 +39,12 @@ public class GoogleOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 			// Register new user if not found
 			user = new User();
 			user.setUsername(email);
+			user.setAuthProvider("google");
 			userRepo.save(user);
 		}
 
 		// Generate JWT token
-		String jwtToken = jwtService.generateToken(user.getUsername());
+		String jwtToken = jwtService.generateGoogleToken(user.getUsername());
 		System.out.println(jwtToken);
 
 		// Redirect the user to the frontend with the JWT token

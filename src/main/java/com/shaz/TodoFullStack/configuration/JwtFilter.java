@@ -21,43 +21,44 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtFilter extends OncePerRequestFilter
 {
-	@Autowired
-	private JwtService jwtService;
-	@Autowired
-	private MyUserDetailsService myUserDetailsService;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private MyUserDetailsService myUserDetailsService;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException
-	{
-		String authHeader = request.getHeader("Authorization");
-		String token = null;
-		String username = null;
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException
+    {
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
+        String username = null;
+        String authProvider = null;
+        UserDetails userDetails = null;
 
-		if (authHeader != null && authHeader.startsWith("Bearer "))
-		{
-			token = authHeader.substring(7);
-			
-			
-			username = jwtService.extractUserName(token);
-		}
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            username = jwtService.extractUserName(token);
+            authProvider = jwtService.extractAuthProvider(token);
+            System.out.println(authProvider);
+        }
 
-		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null)
-		{
-//            UserDetails userDetails = context.getBean(MyUserDetailsService.class).loadUserByUsername(username);
-			UserDetails userDetails = myUserDetailsService.loadUserByUsername(username);
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Use .equals for string comparison
+            if ("google".equals(authProvider)) {
+                userDetails = myUserDetailsService.loadUserByGoogleUsername(username);
+            } else {
+                userDetails = myUserDetailsService.loadUserByUsername(username);
+            }
 
-			if (jwtService.validateToken(token, userDetails))
-			{
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
-						null, userDetails.getAuthorities());
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-			}
-		}
+            if (jwtService.validateToken(token, userDetails)) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        }
 
-		filterChain.doFilter(request, response);
-
-	}
-
+        filterChain.doFilter(request, response);
+    }
 }

@@ -7,10 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +32,7 @@ public class JwtService {
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("authProvider", "local");
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -46,6 +44,20 @@ public class JwtService {
                 .compact();
 
     }
+    public String generateGoogleToken(String username) {
+    	Map<String, Object> claims = new HashMap<>();
+    	claims.put("authProvider", "google");
+    	return Jwts.builder()
+    			.claims()
+    			.add(claims)
+    			.subject(username)
+    			.issuedAt(new Date(System.currentTimeMillis()))
+    			.expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
+    			.and()
+    			.signWith(getKey())
+    			.compact();
+    	
+    }
 
     private SecretKey getKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretkey);
@@ -55,6 +67,11 @@ public class JwtService {
     public String extractUserName(String token) {
         // extract the username from jwt token
         return extractClaim(token, Claims::getSubject);
+    }
+    
+    // Extract authProvider from token
+    public String extractAuthProvider(String token) {
+        return extractClaim(token, claims -> claims.get("authProvider", String.class));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {

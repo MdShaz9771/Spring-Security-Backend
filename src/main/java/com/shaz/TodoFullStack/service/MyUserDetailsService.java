@@ -1,6 +1,7 @@
 package com.shaz.TodoFullStack.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,13 +22,31 @@ public class MyUserDetailsService implements UserDetailsService
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
 	{
 		User user = userRepo.findByUsername(username);
-		System.out.println(username);
 		if (user == null) {
             System.out.println("User Not Found");
             throw new UsernameNotFoundException("user not found");
-        }
+            
+        }else if (user.getAuthProvider() !="local") {
+        	throw new BadCredentialsException("Use different login method");
+			
+		}
         
         return new MyUserDetails(user);
+	}
+	
+	public UserDetails loadUserByGoogleUsername(String username) throws UsernameNotFoundException
+	{
+		User user = userRepo.findByUsername(username);
+		if (user == null) {
+			System.out.println("User Not Found");
+			throw new UsernameNotFoundException("user not found");
+			
+		}else if ( !"google".equals(user.getAuthProvider())) {
+			throw new BadCredentialsException("User different login method");
+			
+		}
+		
+		return new MyUserDetails(user);
 	}
 
 	
