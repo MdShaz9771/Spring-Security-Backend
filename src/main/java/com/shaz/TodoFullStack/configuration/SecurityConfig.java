@@ -29,7 +29,7 @@ public class SecurityConfig
 	private GoogleOAuth2SuccessHandler googleOAuth2SuccessHandler;
 	
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception
 	{
 		return http
 				.authorizeHttpRequests(request->request
@@ -47,12 +47,12 @@ public class SecurityConfig
 	
 	
 	 @Bean
-	    public PasswordEncoder passwordEncoder() {
+	 PasswordEncoder passwordEncoder() {
 	        return new BCryptPasswordEncoder(12);
 	    }
 	
 	@Bean
-    public AuthenticationProvider authenticationProvider() {
+    AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
         provider.setUserDetailsService(userDetailsService);
@@ -60,7 +60,7 @@ public class SecurityConfig
     }
 	
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception
+	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception
 	{
 		return config.getAuthenticationManager();
 	}
